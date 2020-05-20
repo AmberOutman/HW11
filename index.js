@@ -29,6 +29,40 @@ app.post("/api/notes", (req, res) => {
     });
 });
 
+app.get("/api/notes", (req, res) => {
+    fs.readFile("db.json", "utf-8", (err, data) => {
+        if(err){
+            console.error("ERROR: ", err);
+            res.sendStatus(500);
+            return;  
+        }
+        const db = JSON.parse(data);
+        res.send(db.notes);
+    });
+});
+
+app.delete("/api/notes/:id", (req,res) => {
+    const id = req.params.id;
+    fs.readFile("db.json", "utf-8", (err, data) => {
+        if(err){
+            console.error("ERROR: ", err);
+            res.sendStatus(500);
+            return;  
+        }
+        const db = JSON.parse(data);
+        const newNotes = db.notes.filter(note => note.id !== id);
+        const newDb = {notes: newNotes};
+        fs.writeFile("db.json", JSON.stringify(newDb), "utf-8", err => {
+            if (err){
+                console.error("ERROR: ", err);
+                res.sendStatus(500);
+                return;
+            }
+            res.sendStatus(204);
+        });
+    });
+});
+
 app.get("/notes", (req, res) =>{
     res.sendFile("notes.html", {root: __dirname + "/public"});
 });
